@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { useEffect } from "react";
 import { Label } from "../components/ui/label";
 import {
   Select,
@@ -11,23 +12,22 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import {
-  Search,
   AlertTriangle,
   CheckCircle,
   AlertCircle,
   Loader2,
+  Search,
   ShieldAlert,
   ShieldCheck,
   Eye,
 } from "lucide-react";
+
 import { useFraudPrediction } from "../hooks/useFraudPrediction";
-import { useCreateTransaction } from "../hooks/useTransactions";
 import Navbar from "../components/layout/Navbar.tsx";
 
 const Predict = () => {
   const { user, readableUserId } = useAuth();
   const { predict, isLoading, result, reset } = useFraudPrediction();
-  const createTransaction = useCreateTransaction();
 
   const [formData, setFormData] = useState({
     amount: "",
@@ -36,7 +36,33 @@ const Predict = () => {
     transactionType: "",
     merchantCategory: "",
   });
+const [location, setLocation] = useState("");
+const [ipAddress, setIpAddress] = useState("");
+const fetchLocationFromIP = async () => {
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    const data = await res.json();
 
+    setLocation(`${data.city}, ${data.country_name}`);
+  } catch (err) {
+    console.error("Location error:", err);
+  }
+};
+
+const fetchIP = async () => {
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+
+    setIpAddress(data.ip);
+  } catch (err) {
+    console.error("IP error:", err);
+  }
+};
+useEffect(() => {
+  fetchIP();
+  fetchLocationFromIP();
+}, []);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -52,26 +78,7 @@ const Predict = () => {
     });
 
     if (analysis) {
-      createTransaction.mutate({
-        auth_id: user.id,
-        amount: parseFloat(formData.amount),
-        location: formData.location,
-        device_type: formData.deviceType,
-        transaction_type: formData.transactionType,
-        category: formData.merchantCategory,
-        transaction_time: new Date().toISOString(),
-        status: "completed",
-        fraud_status:
-          analysis.riskLevel === "high"
-            ? "fraud"
-            : analysis.riskLevel === "medium"
-            ? "anomaly"
-            : "normal",
-        fraud_probability: analysis.probability,
-        risk_level: analysis.riskLevel,
-        anomaly_score: analysis.anomalyScore,
-        prediction_factors: analysis.factors as any,
-      });
+      console.log("Prediction result:", analysis);
     }
   };
 
@@ -113,6 +120,55 @@ const Predict = () => {
         return "bg-muted border-border";
     }
   };
+
+  const handlePredict = async (formData) => {
+  const response = await fetch('http://localhost:8000/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData),
+  });
+  const result = await response.json();
+  console.log("AI Result:", result);
+};
+
+
+
+
+const handleAISubmit = async (formData) => {
+  // 1. Manual mapping (must match your Python LabelEncoder)
+  const locationMap = { "Mumbai": 0, "Chennai": 1, "Vellore": 2 }; 
+  const deviceMap = { "Mobile": 0, "Desktop": 1, "Tablet": 2 };
+
+  // 2. Prepare the data for the Python API
+  const payload = {
+    amount: parseFloat(formData.amount),
+
+    ip_address: ipAddress,
+
+
+    loc_enc: locationMap[formData.location] || 0,
+    dev_enc: deviceMap[formData.device_type] || 0,
+    cat_enc: 1 // Example category
+
+  };
+
+  // 3. Send to FastAPI
+  try {
+    const response = await fetch('http://localhost:8000/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    
+    const result = await response.json();
+    
+    // 4. Show result on screen
+    alert(`AI Prediction: ${result.status} (Probability: ${result.fraud_probability})`);
+  } catch (error) {
+    console.error("Error connecting to Python API:", error);
+  }
+};
+
 
   const getRiskIcon = (level: string) => {
     switch (level) {
@@ -177,12 +233,20 @@ const Predict = () => {
                 <div className="space-y-2">
                   <Label>Amount (₹)</Label>
                   <Input
-                    type="number"
-                    placeholder="0.00"
-                    value={formData.amount}
-                    onChange={(e) =>
-                      setFormData({ ...formData, amount: e.target.value })
+                    type="text"
+                    placeholder="₹0"
+                    value={
+                      formData.amount
+                        ? Number(formData.amount).toLocaleString("en-IN")
+                        : ""
                     }
+                    onChange={(e) => {
+                      const rawValue = e.target.value.replace(/,/g, ""); // remove commas
+
+                      if (!isNaN(Number(rawValue))) {
+                        setFormData({ ...formData, amount: rawValue });
+                      }
+                    }}
                     required
                   />
                 </div>
@@ -275,6 +339,16 @@ const Predict = () => {
                     <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+
+              {/*IP Location*/}
+             <div className="space-y-2">
+                <Label>IP Location</Label>
+                <Input
+                  value={location || "Detecting location..."}
+                  readOnly
+                />
               </div>
 
               {/* Buttons */}

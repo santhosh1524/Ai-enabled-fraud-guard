@@ -1,0 +1,34 @@
+C:\Users\ELCOT\Desktop\project
+├── 📂 backend
+│   ├── app_explainability.py     <-- Move from src/pages
+│   ├── requirements.txt          <-- Python dependencies
+│   └── transactions.csv          <-- sample Dataset
+│
+├── 📂 frontend
+│   ├── 📂 src
+│   │   ├── 📂 components
+│   │   │   └── 📂 explainability
+│   │   │       ├── ExplainabilitySearch.tsx
+│   │   │       ├── LIMEExplainer.tsx
+│   │   │       └── SHAPExplainer.tsx
+|   |   |___📂 integrations
+│   │   ├── 📂 hooks
+│   │   │   └── useExplainability.ts
+│   │   ├── 📂 pages
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── Explainability.tsx
+│   │   │   ├── Predict.tsx
+│   │   │   └── Transactions.tsx
+│   │   ├── App.tsx
+        |___App.css
+│   │   └── main.tsx
+│   ├── 📂 public
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── index.html
+│
+├── 📂 docs (Optional)            <-- Put those .md and .txt files here
+│   ├── INSTALLATION_GUIDE.md
+│   └── IMPLEMENTATION_SUMMARY.md
+│
+└── .gitignore

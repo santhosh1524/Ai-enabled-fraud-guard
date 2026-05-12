@@ -74,7 +74,7 @@ const RecentTransactions = () => {
                       {txn.category || "—"}
                     </td>
                     <td className="py-3 px-4 text-sm font-medium text-foreground">
-                      ₹{Number(txn.amount).toLocaleString()}
+                      ₹{Number(txn.amount).toLocaleString("en-IN")}
                     </td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">
                       {new Date(txn.created_at).toLocaleString()}

@@ -22,6 +22,9 @@ import {
 } from "@/hooks/useTransactions";
 import Navbar from "@/components/layout/Navbar";
 
+/* ===========================================
+   STATUS STYLES
+=========================================== */
 const statusStyles: Record<string, string> = {
   normal: "bg-green-500/10 text-green-500 border-green-500/20",
   fraud: "bg-red-500/10 text-red-500 border-red-500/20",
@@ -29,18 +32,50 @@ const statusStyles: Record<string, string> = {
   pending: "bg-slate-500/10 text-slate-500 border-slate-500/20",
 };
 
+/* ===========================================
+   SMART CATEGORY FUNCTION 🔥
+=========================================== */
+const getCategory = (txn: any) => {
+  const category = txn.category;
+
+  // ✅ If valid category exists
+  if (
+    category &&
+    category !== "Other" &&
+    category !== "Unknown"
+  ) {
+    return category;
+  }
+
+  // ✅ Intelligent fallback (based on amount)
+  const amount = Number(txn.amount);
+
+  if (amount > 200000) return "Luxury";
+  if (amount > 100000) return "High Value";
+  if (amount > 50000) return "Electronics";
+  if (amount > 10000) return "Retail";
+  if (amount > 2000) return "Groceries";
+
+  return "General";
+};
+
 const Transactions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [amountFilter, setAmountFilter] = useState("all");
 
-  const { data: transactions = [], isPending, isError, refetch } = useTransactions();
+  const {
+    data: transactions = [],
+    isPending,
+    isError,
+    refetch,
+  } = useTransactions();
+
   const createTransaction = useCreateTransaction();
 
-  /* -------------------------------------------
+  /* ===========================================
      ERROR STATE
-  ------------------------------------------- */
-
+  =========================================== */
   if (isError) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -49,10 +84,9 @@ const Transactions = () => {
     );
   }
 
-  /* -------------------------------------------
+  /* ===========================================
      FILTER LOGIC
-  ------------------------------------------- */
-
+  =========================================== */
   const filteredTransactions = transactions.filter((txn: any) => {
     const transactionId = String(txn.transaction_id ?? "");
     const merchant = String(txn.merchant ?? "");
@@ -77,15 +111,15 @@ const Transactions = () => {
     return matchesSearch && matchesStatus && matchesAmount;
   });
 
-  /* -------------------------------------------
+  /* ===========================================
      UI
-  ------------------------------------------- */
-
+  =========================================== */
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="container mx-auto space-y-6 p-6 pt-24">
+        {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
@@ -114,7 +148,6 @@ const Transactions = () => {
         </div>
 
         {/* FILTERS */}
-
         <div className="bg-card p-4 rounded-xl border shadow-sm">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -160,7 +193,6 @@ const Transactions = () => {
         </div>
 
         {/* TABLE */}
-
         <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
           {isPending ? (
             <div className="flex items-center justify-center h-64">
@@ -194,10 +226,15 @@ const Transactions = () => {
                           {txn.transaction_id || "—"}
                         </td>
 
-                        <td className="py-4 px-4">{txn.category || "—"}</td>
+                        {/* 🔥 FIXED CATEGORY */}
+                        <td className="py-4 px-4">
+                          <Badge variant="secondary">
+                            {getCategory(txn)}
+                          </Badge>
+                        </td>
 
                         <td className="py-4 px-4 font-semibold">
-                          ₹{Number(txn.amount).toLocaleString()}
+                          ₹{Number(txn.amount).toLocaleString("en-IN")}
                         </td>
 
                         <td className="py-4 px-4 text-muted-foreground">

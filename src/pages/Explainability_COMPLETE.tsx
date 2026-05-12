@@ -188,7 +188,6 @@ const Explainability = () => {
       setShaLoading(true);
       try {
         await fetchExplanation(txnNo);
-        console.log(`[Explainability] Fetched explanation for ${txnNo}`);
       } catch (err) {
         console.error("Search failed:", err);
         // Error is handled by useExplainability hook
@@ -349,7 +348,7 @@ const Explainability = () => {
 
           {/* SHAP Explainer */}
           <SHAPExplainer
-          imageSrc={result.shap_plot}   // ✅ matches what the hook now stores
+            imageSrc={result.shap_image}
             isLoading={false}
             title="SHAP Waterfall Plot"
             description="Shows how each feature contributes to the fraud prediction. Positive values increase fraud risk, negative values decrease it."
@@ -357,7 +356,6 @@ const Explainability = () => {
 
           {/* LIME Explainer */}
           <LIMEExplainer
-            featureRows={result.lime_features}
             htmlContent={result.lime_html}
             isLoading={false}
             title="LIME Local Explanation"
@@ -451,16 +449,15 @@ const Explainability = () => {
           <div className="space-y-3">
             <h4 className="font-semibold text-foreground flex items-center gap-2">
               <Lightbulb className="h-4 w-4 text-yellow-500" />
-             
               LIME Table
             </h4>
             <p className="text-sm text-muted-foreground">
               The interactive table shows which feature values contributed most
               to the prediction. The table is sorted by impact. Features can be
-              in the format "feature & threshold" or "feature = value".
+              in the format "feature > threshold" or "feature = value".
             </p>
             <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded">
-              <strong>Example:</strong> "Amount lessthan 1,40,000" contributes +0.45 to
+              <strong>Example:</strong> "Amount > 140,000" contributes +0.45 to
               fraud probability
             </div>
           </div>
@@ -475,7 +472,6 @@ const Explainability = () => {
         </p>
       </div>
     </div>
-    
   );
 };
 

@@ -3,6 +3,7 @@ import {
   Brain,
   Database,
   Shield,
+  GitFork,
   Server,
   Code,
   Layers,
@@ -13,10 +14,10 @@ import {
 const technologies = [
   { name: "React.js", category: "Frontend", icon: Code },
   { name: "FastAPI", category: "Backend", icon: Server },
-  { name: "TensorFlow / PyTorch", category: "ML Framework", icon: Brain },
+  { name: "XGBoost", category: "ML Framework", icon: Brain },
   { name: "PostgreSQL", category: "Database", icon: Database },
   { name: "SHAP / LIME", category: "Explainability", icon: Layers },
-  { name: "Docker", category: "Deployment", icon: Shield },
+  { name: "GIT", category: "Version Control", icon: GitFork },
 ];
 
 const objectives = [
@@ -183,7 +184,7 @@ const About = () => {
           </div>
           <div>
             <p className="text-primary-foreground/70 text-sm">Year</p>
-            <p className="font-medium">2024-2025</p>
+            <p className="font-medium">2025-2026</p>
           </div>
         </div>
       </div>

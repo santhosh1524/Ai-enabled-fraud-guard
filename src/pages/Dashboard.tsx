@@ -6,10 +6,7 @@ import AnomalyScoreChart from "@/components/dashboard/AnomalyScoreChart";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import { useTransactionStats } from "@/hooks/useTransactions";
 import Navbar from "@/components/layout/Navbar";
-import {
 
-  LogIn, 
-} from "lucide-react";
 const Dashboard = () => {
   const { data: stats, isLoading } = useTransactionStats();
 
@@ -23,9 +20,10 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */
-         <Navbar/>
-      }
+      {/* Navbar */}
+      <Navbar />
+
+      {/* Page Header */}
       <div>
         <h1 className="pt-9 text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground mt-1">
@@ -33,7 +31,7 @@ const Dashboard = () => {
         </p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Real-time from Supabase */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
           title="Total Transactions"
@@ -69,18 +67,16 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Charts Row */}
+      {/* Charts Row - Real-time visualization */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TransactionChart />
-        <div className="grid grid-cols-1 gap-6">
-          <FraudPieChart />
-        </div>
+        <FraudPieChart />
       </div>
 
-      {/* Anomaly Score Distribution */}
+      {/* Anomaly Score Distribution - Real-time */}
       <AnomalyScoreChart />
 
-      {/* Recent Transactions */}
+      {/* Recent Transactions - Real-time */}
       <RecentTransactions />
     </div>
   );

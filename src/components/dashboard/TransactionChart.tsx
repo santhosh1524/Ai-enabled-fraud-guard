@@ -1,90 +1,166 @@
+import { useEffect, useState } from "react";
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
-const data = [
-  { name: "Jan", transactions: 4000, fraud: 24 },
-  { name: "Feb", transactions: 3000, fraud: 13 },
-  { name: "Mar", transactions: 5000, fraud: 38 },
-  { name: "Apr", transactions: 4500, fraud: 20 },
-  { name: "May", transactions: 6000, fraud: 45 },
-  { name: "Jun", transactions: 5500, fraud: 30 },
-  { name: "Jul", transactions: 7000, fraud: 52 },
-  { name: "Aug", transactions: 6500, fraud: 35 },
-  { name: "Sep", transactions: 8000, fraud: 60 },
-  { name: "Oct", transactions: 7500, fraud: 48 },
-  { name: "Nov", transactions: 9000, fraud: 70 },
-  { name: "Dec", transactions: 8500, fraud: 55 },
-];
+interface TransactionData {
+  date: string;
+  total: number;
+  fraud: number;
+  normal: number;
+}
 
 const TransactionChart = () => {
+  const [data, setData] = useState<TransactionData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTransactionData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Fetch all transactions from Supabase
+        const { data: transactions, error: fetchError } = await supabase
+          .from("transactions")
+          .select("created_at, fraud_status")
+          .order("created_at", { ascending: true });
+
+        if (fetchError) throw fetchError;
+
+        // Group transactions by date
+        const groupedData: Record<string, { total: number; fraud: number; normal: number }> = {};
+
+        transactions?.forEach((txn: any) => {
+          const date = new Date(txn.created_at).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+
+          if (!groupedData[date]) {
+            groupedData[date] = { total: 0, fraud: 0, normal: 0 };
+          }
+
+          groupedData[date].total += 1;
+
+          if (txn.fraud_status === "fraud") {
+            groupedData[date].fraud += 1;
+          } else {
+            groupedData[date].normal += 1;
+          }
+        });
+
+        // Convert to array format for recharts
+        const chartData: TransactionData[] = Object.entries(groupedData).map(
+          ([date, counts]) => ({
+            date,
+            ...counts,
+          })
+        );
+
+        setData(chartData);
+      } catch (err: any) {
+        console.error("Error fetching transaction data:", err);
+        setError(err.message || "Failed to load data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTransactionData();
+
+    // Subscribe to real-time updates
+    const subscription = supabase
+      .channel("transactions")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "transactions",
+        },
+        () => {
+          // Refetch data when changes occur
+          fetchTransactionData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="bg-card p-6 rounded-xl border shadow-sm flex items-center justify-center h-80">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-card p-6 rounded-xl border shadow-sm">
+        <p className="text-red-500">Error: {error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-foreground">Transaction Volume Over Time</h3>
-        <p className="text-sm text-muted-foreground">Monthly transaction trends with fraud detection</p>
-      </div>
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
-            <defs>
-              <linearGradient id="colorTransactions" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(195, 85%, 45%)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(195, 85%, 45%)" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="colorFraud" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(0, 72%, 51%)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(0, 72%, 51%)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 88%)" />
-            <XAxis 
-              dataKey="name" 
-              stroke="hsl(215, 15%, 45%)" 
-              fontSize={12}
-              tickLine={false}
-            />
-            <YAxis 
-              stroke="hsl(215, 15%, 45%)" 
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(0, 0%, 100%)",
-                border: "1px solid hsl(214, 20%, 88%)",
-                borderRadius: "8px",
-                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="transactions"
-              stroke="hsl(195, 85%, 45%)"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorTransactions)"
-              name="Transactions"
-            />
-            <Area
-              type="monotone"
-              dataKey="fraud"
-              stroke="hsl(0, 72%, 51%)"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorFraud)"
-              name="Fraud Detected"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+    <div className="bg-card p-6 rounded-xl border shadow-sm">
+      <h3 className="text-lg font-semibold mb-4 text-foreground">
+        Transaction Trends
+      </h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: "hsl(var(--background))",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: "8px",
+            }}
+          />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="total"
+            stroke="#3b82f6"
+            strokeWidth={2}
+            name="Total Transactions"
+            dot={{ fill: "#3b82f6", r: 4 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="fraud"
+            stroke="#ef4444"
+            strokeWidth={2}
+            name="Fraud Cases"
+            dot={{ fill: "#ef4444", r: 4 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="normal"
+            stroke="#10b981"
+            strokeWidth={2}
+            name="Normal Transactions"
+            dot={{ fill: "#10b981", r: 4 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 };
