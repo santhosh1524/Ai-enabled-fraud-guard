@@ -29,8 +29,9 @@ export const useExplainability = (): UseExplainabilityReturn => {
     try {
       console.log(`🔍 Fetching explanation for: ${txnNo}`);
 
+      const apiBaseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
       const response = await fetch(
-        `http://127.0.0.1:8000/api/explain/${encodeURIComponent(txnNo)}`
+        `${apiBaseUrl}/api/explain/${encodeURIComponent(txnNo)}`
       );
 
       const contentType = response.headers.get("content-type");

@@ -1,3 +1,4 @@
+import os
 import warnings
 import uuid
 warnings.filterwarnings("ignore")
@@ -20,8 +21,8 @@ from lime import lime_tabular
 # =====================================================
 # SUPABASE
 # =====================================================
-SUPABASE_URL = "https://dwqgopgljgdlsffqsioj.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3cWdvcGdsamdkbHNmZnFzaW9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2OTA4MzAsImV4cCI6MjA4NDI2NjgzMH0.eryK5bg7dT5gcdT8vyYffc7q8UjyP6TgcCv9G19KA7o"
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://dwqgopgljgdlsffqsioj.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3cWdvcGdsamdkbHNmZnFzaW9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2OTA4MzAsImV4cCI6MjA4NDI2NjgzMH0.eryK5bg7dT5gcdT8vyYffc7q8UjyP6TgcCv9G19KA7o")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
