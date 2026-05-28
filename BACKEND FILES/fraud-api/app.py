@@ -148,14 +148,14 @@ async def predict_transaction(data: PredictionRequest, request: Request):
         history_data = history.data or []
 
         # CALCULATE CUSTOM FEATURES (used for risk logic, not model input)
-        current_time = pd.Timestamp.now()
+        current_time = pd.Timestamp.now(tz='UTC')
         current_hour = current_time.hour
         irregular_time = int(current_hour < 8 or current_hour > 22)
 
         count_30min = 0
         for row in history_data:
             try:
-                ts = pd.to_datetime(row["created_at"])
+                ts = pd.to_datetime(row["created_at"], utc=True)
                 if (abs((current_time - ts).total_seconds()) / 60) <= 30:
                     count_30min += 1
             except:
@@ -166,17 +166,23 @@ async def predict_transaction(data: PredictionRequest, request: Request):
         impossible_travel = 0
         location_switches = 0
         unique_locations_1hr = set()
+        unique_locations_6hr = set()
         unique_locations_1hr.add(data.location)
+        unique_locations_6hr.add(data.location)
 
         for i, row in enumerate(history_data):
             try:
-                ts = pd.to_datetime(row["created_at"])
+                ts = pd.to_datetime(row["created_at"], utc=True)
                 diff_mins = abs((current_time - ts).total_seconds()) / 60
                 row_loc = row.get("location", "")
 
                 # Collect unique locations in last 1 hour
                 if diff_mins <= 60 and row_loc:
                     unique_locations_1hr.add(row_loc)
+
+                # Collect unique locations in last 6 hours
+                if diff_mins <= 360 and row_loc:
+                    unique_locations_6hr.add(row_loc)
 
                 # Count back-and-forth switches across last 6 hours
                 if diff_mins <= 360 and i < len(history_data) - 1:
@@ -186,12 +192,12 @@ async def predict_transaction(data: PredictionRequest, request: Request):
             except:
                 pass
 
-        if len(unique_locations_1hr) >= 3:
-            impossible_travel = 2   # 3+ locations in 1hr = definitely impossible
-        elif len(unique_locations_1hr) == 2:
-            impossible_travel = 1   # 2 locations in 1hr = suspicious
-        elif location_switches >= 3:
-            impossible_travel = 1   # frequent back-and-forth over 6hrs
+        if len(unique_locations_1hr) >= 2:
+            impossible_travel = 2   # 2+ locations in 1 hour is physically impossible
+        elif len(unique_locations_6hr) >= 2:
+            impossible_travel = 2   # 2+ locations in 6 hours is physically impossible for these distant cities
+        elif location_switches >= 2:
+            impossible_travel = 1   # frequent back-and-forth switching pattern
 
         # BUILD MODEL INPUT
         X = pd.DataFrame([{
@@ -247,11 +253,11 @@ async def predict_transaction(data: PredictionRequest, request: Request):
             rule_boost += 0.15
 
         if impossible_travel == 2:
-            risk_factors.append("Impossible travel detected (multiple locations in 1 hour)")
-            rule_boost += 0.45
+            risk_factors.append("Impossible travel detected (multiple locations in short timeframe)")
+            rule_boost += 0.80  # Guarantee high-risk fraud (>= 0.75)
         elif impossible_travel == 1:
-            risk_factors.append("Suspicious location switching detected")
-            rule_boost += 0.30
+            risk_factors.append("Suspicious location switching pattern")
+            rule_boost += 0.50  # Guarantee medium-risk anomaly (>= 0.45)
 
         if irregular_time:
             risk_factors.append("Irregular transaction time")
