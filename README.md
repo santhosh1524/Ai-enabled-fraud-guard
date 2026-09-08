@@ -1,71 +1,67 @@
-# Welcome to your   project
+# 🛡️ AI-Enabled Financial Fraud Guard
 
-## Project info
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![React](https://img.shields.io/badge/Frontend-React%20%7C%20Tailwind-blue)]()
+[![Python](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python-3776AB)]()
 
-## How can I edit this code?
+An intelligent, real-time financial fraud detection engine powered by machine learning algorithms, continuous anomaly scoring, and instant alert dispatching.
 
-There are several ways of editing your application.
+---
 
-**Use  **
+## 🌟 Features
 
-Simply visit the [  Project](https:// .dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- ⚡ **Real-Time Transaction Screening**: Evaluates incoming transaction payloads against ML anomaly detection models in sub-millisecond latencies.
+- 📊 **Interactive Risk Dashboard**: Provides visual metrics for risk scoring, flagged transactions, and high-frequency risk patterns.
+- 🔔 **Instant Alerting Mechanism**: Integrates with notification webhooks to alert compliance and security teams when suspicious activity is detected.
+- 🔑 **Rule-Based & ML Hybrid Engine**: Combines deterministic compliance rules with machine learning classification for maximum precision.
 
-Changes made via   will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 🛠️ Architecture & Tech Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in  .
+```
+ ┌─────────────────┐       ┌──────────────────┐       ┌─────────────────┐
+ │   React + Vite  │ ────> │ FastAPI Backend  │ ────> │   ML Pipeline   │
+ │   User Interface│ <──── │ REST API Engine  │ <──── │ Scikit-Learn/Py │
+ └─────────────────┘       └──────────────────┘       └─────────────────┘
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS, Lucide Icons, Shadcn UI
+- **Backend**: Python, FastAPI, Pandas, Scikit-Learn
+- **Database/Storage**: Supabase / SQLite
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🚀 Quick Start
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Prerequisites
+- Node.js (v18+ recommended)
+- Python 3.10+
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 1. Frontend Setup
+```bash
+# Install Node dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the Vite development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### 2. Backend & ML Model Execution
+```bash
+# Run transaction checker script
+python check_transactions.py
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 📜 License
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for more details.
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## 👨‍💻 Author
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [ ](https:// .dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my   project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs. .dev/features/custom-domain#custom-domain)
+Developed by **Santhosh Mahalingam** ([@santhosh1524](https://github.com/santhosh1524))
